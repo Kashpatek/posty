@@ -42,7 +42,7 @@ var SAIL_EPS=[
 
 function Badge(p){return <span style={{display:"inline-block",fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,background:p.bg,color:p.c||"#fff",letterSpacing:.5}}>{p.children}</span>}
 function Btn(p){return <button onClick={p.onClick} style={{padding:"6px 14px",border:p.on?"2px solid "+AMB:"1px solid "+BDR,borderRadius:6,background:p.on?AMB+"18":"transparent",color:p.on?AMB:"#6b7280",cursor:"pointer",fontFamily:FONT,fontSize:12,fontWeight:p.on?700:400,...(p.sx||{})}}>{p.children}</button>}
-function Chk(p){return <span onClick={p.onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:18,height:18,borderRadius:4,border:"1px solid "+(p.on?GRN:BDR),background:p.on?GRN+"20":"transparent",cursor:"pointer",fontSize:10,color:p.on?GRN:"#374151",userSelect:"none"}}>{p.on?"\u2713":""}</span>}
+function Chk(p){return <span onClick={p.onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:4,border:"2px solid "+(p.on?GRN:BDR),background:p.on?GRN+"30":"transparent",cursor:"pointer",fontSize:12,color:p.on?GRN:"#4b5563",userSelect:"none",fontWeight:700}}>{p.on?"\u2713":""}</span>}
 
 export default function PostyApp(){
   var [view,setView]=useState("welcome");
@@ -69,6 +69,7 @@ export default function PostyApp(){
 
   function tog(id,f){setEps(function(p){return p.map(function(e){if(e.id!==id)return e;var n=Object.assign({},e);n[f]=!n[f];return n})})}
   function markPub(id){setEps(function(p){var a=p.map(function(e){return Object.assign({},e)});var ep=a.find(function(e){return e.id===id});if(ep){ep.status="published";ep.slot=-1}var r=a.filter(function(e){return e.status!=="published"}).sort(function(x,y){return x.slot-y.slot});r.forEach(function(e,i){e.slot=i});return a})}
+  function unPub(id){setEps(function(p){var a=p.map(function(e){return Object.assign({},e)});var ep=a.find(function(e){return e.id===id});if(ep){ep.status="scheduled";var maxSlot=a.filter(function(e){return e.status!=="published"}).reduce(function(m,e){return Math.max(m,e.slot)},-1);ep.slot=maxSlot+1}return a})}
   function doDrop(tid){if(!dragId||dragId===tid)return;setEps(function(p){var a=p.map(function(e){return Object.assign({},e)});var f=a.find(function(e){return e.id===dragId});var t=a.find(function(e){return e.id===tid});if(f&&t){var tmp=f.slot;f.slot=t.slot;t.slot=tmp}return a});setDragId(null)}
 
   if(view==="welcome")return(
@@ -120,8 +121,11 @@ export default function PostyApp(){
     </div>
 
     {pub.length>0&&<div style={{marginBottom:16,padding:12,background:GRN+"08",borderRadius:8,border:"1px solid "+GRN+"30"}}>
-      <div style={{fontSize:10,color:GRN,textTransform:"uppercase",letterSpacing:2,fontWeight:700,marginBottom:8}}>Published</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{pub.map(function(ep){return <div key={ep.id} onClick={function(){setSel(ep);setView("ep")}} style={{padding:"8px 14px",borderRadius:6,background:GRN+"0a",border:"1px solid "+GRN+"25",cursor:"pointer"}}><div style={{fontSize:13,fontWeight:700,color:"#d1d5db"}}>{ep.guest}</div><div style={{fontSize:10,color:"#6b7280"}}>{ep.company} // {ep.host}</div></div>})}</div>
+      <div style={{fontSize:10,color:GRN,textTransform:"uppercase",letterSpacing:2,fontWeight:700,marginBottom:8}}>Published{edit?" (click Restore to move back to schedule)":""}</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{pub.map(function(ep){return <div key={ep.id} style={{padding:"8px 14px",borderRadius:6,background:GRN+"0a",border:"1px solid "+GRN+"25",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+        <div onClick={function(){setSel(ep);setView("ep")}}><div style={{fontSize:13,fontWeight:700,color:"#d1d5db"}}>{ep.guest}</div><div style={{fontSize:10,color:"#6b7280"}}>{ep.company} // {ep.host}</div></div>
+        {edit&&<button onClick={function(ev){ev.stopPropagation();unPub(ep.id)}} style={{background:AMB+"20",border:"1px solid "+AMB,borderRadius:4,color:AMB,cursor:"pointer",fontFamily:FONT,fontSize:10,padding:"4px 10px",fontWeight:700,whiteSpace:"nowrap"}}>Restore</button>}
+      </div>})}</div>
     </div>}
 
     {edit&&<div style={{padding:16,background:BG1,borderRadius:8,border:"2px solid "+AMB+"40",marginBottom:18}}>
@@ -136,7 +140,7 @@ export default function PostyApp(){
         <span style={{fontSize:11,color:"#6b7280"}}>{ep.company}</span>
         <span style={{fontSize:10,color:"#4b5563"}}>{ep.host}</span>
         <span style={{fontSize:9,color:"#374151"}}>{fs(d)}</span>
-        <button onClick={function(){markPub(ep.id)}} style={{background:"none",border:"1px solid "+GRN+"40",borderRadius:4,color:GRN,cursor:"pointer",fontFamily:FONT,fontSize:9,padding:"2px 6px"}}>Pub</button>
+        <button onClick={function(){markPub(ep.id)}} style={{background:GRN+"20",border:"2px solid "+GRN,borderRadius:6,color:GRN,cursor:"pointer",fontFamily:FONT,fontSize:11,padding:"5px 12px",fontWeight:700}}>Publish</button>
       </div>})}
     </div>}
 
@@ -192,7 +196,7 @@ return <div key={mi} style={{padding:14,background:BG1,borderRadius:8,border:"1p
   <div style={{fontSize:13,fontWeight:700,color:AMB,marginBottom:8}}>{new Date(m.y,m.m).toLocaleDateString("en-US",{month:"long",year:"numeric"})}</div>
   <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,fontSize:9}}>
     {["Su","Mo","Tu","We","Th","Fr","Sa"].map(function(dn){return <div key={dn} style={{textAlign:"center",color:"#4b5563",padding:3,fontWeight:700}}>{dn}</div>})}
-    {cells.map(function(day,ci){if(!day)return <div key={"e"+ci}/>;var epH=m.eps.find(function(e){return e.date.getDate()===day});var has=!!epH;return <div key={ci} onClick={function(){if(has)onSel(epH)}} style={{textAlign:"center",padding:"5px 2px",borderRadius:4,background:epH?AMB+"20":"transparent",border:epH?"1px solid "+AMB+"40":"1px solid transparent",color:epH?"#f3f4f6":"#374151",cursor:has?"pointer":"default",fontWeight:epH?700:400,fontSize:10}}>{day}{epH&&<div style={{fontSize:7,color:AMB,marginTop:1}}>{epH.guest.split(" ")[0]}</div>}</div>})}
+    {cells.map(function(day,ci){if(!day)return <div key={"e"+ci}/>;var epH=m.eps.find(function(e){return e.date.getDate()===day});var has=!!epH;return <div key={ci} onClick={function(){if(has)onSel(epH)}} style={{textAlign:"center",padding:"6px 3px",borderRadius:4,background:epH?BG0:"transparent",border:epH?"2px solid "+GRN:"1px solid transparent",color:epH?"#ffffff":"#9ca3af",cursor:has?"pointer":"default",fontWeight:epH?700:400,fontSize:11}}>{day}{epH&&<div style={{fontSize:8,color:GRN,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:700}}>{epH.guest.split(" ")[0]}</div>}</div>})}
   </div></div>})}</div>}
 
 function EpDet(p){var ep=p.ep,cad=p.cad,onBack=p.onBack;
