@@ -1,0 +1,7 @@
+@font-face{font-family:'Grift';src:local('Grift');font-display:swap;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#08090D;color:#e5e7eb;font-family:'Grift','JetBrains Mono','SF Mono',monospace;}
+::selection{background:#F7B041;color:#08090D;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#08090D;}
+::-webkit-scrollbar-thumb{background:#2a2d35;border-radius:3px;}
