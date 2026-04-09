@@ -58,8 +58,25 @@ export default function PostyApp(){
   var [subV,setSubV]=useState("timeline");
   var [loaded,setLoaded]=useState(false);
 
-  useEffect(function(){try{var s=localStorage.getItem("pv4");if(s)setEps(JSON.parse(s));var c=localStorage.getItem("pv4c");if(c)setCadIdx(JSON.parse(c));}catch(e){}setLoaded(true);},[]);
-  useEffect(function(){if(loaded){try{localStorage.setItem("pv4",JSON.stringify(eps));localStorage.setItem("pv4c",JSON.stringify(cadIdx));}catch(e){}}},[eps,cadIdx,loaded]);
+  useEffect(function(){
+    // Load: try API first, fall back to localStorage
+    fetch("/api/state").then(function(r){return r.json()}).then(function(d){
+      if(d.eps)setEps(d.eps);
+      if(d.cadIdx!==undefined)setCadIdx(d.cadIdx);
+      setLoaded(true);
+    }).catch(function(){
+      try{var s=localStorage.getItem("pv4");if(s)setEps(JSON.parse(s));var c=localStorage.getItem("pv4c");if(c)setCadIdx(JSON.parse(c));}catch(e){}
+      setLoaded(true);
+    });
+  },[]);
+
+  useEffect(function(){
+    if(!loaded)return;
+    // Save: API + localStorage
+    var payload=JSON.stringify({eps:eps,cadIdx:cadIdx});
+    try{localStorage.setItem("pv4",JSON.stringify(eps));localStorage.setItem("pv4c",JSON.stringify(cadIdx));}catch(e){}
+    fetch("/api/state",{method:"POST",headers:{"Content-Type":"application/json"},body:payload}).catch(function(){});
+  },[eps,cadIdx,loaded]);
 
   var cad=CADENCES[cadIdx];
   var pub=eps.filter(function(e){return e.status==="published"});
