@@ -1,3 +1,3 @@
 'use client';
-import Posty from './PostyHub';
-export default function Home(){return<Posty/>;}
+import PostyApp from './PostyHub';
+export default function Home(){return<PostyApp/>;}

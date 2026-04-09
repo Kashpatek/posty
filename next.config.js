@@ -1,1 +1,1 @@
-module.exports={reactStrictMode:true,images:{domains:['logo.clearbit.com']}};
+module.exports={reactStrictMode:true};
